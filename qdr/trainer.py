@@ -5,7 +5,6 @@ a corpus)
 
 import sys
 
-from codecs import EncodedFile
 from gzip import GzipFile
 
 if sys.version_info[0] == 3:
