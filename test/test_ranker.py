@@ -89,7 +89,7 @@ class TestRanker(unittest.TestCase):
         dirichlet = 0.0
         ad = 0.0
         sum_w_cwd_doc = float(len(document))
-        nwords_corpus = sum(v[0] for v in corpus_unigrams.itervalues())
+        nwords_corpus = sum(v[0] for v in corpus_unigrams.values())
         n2p1 = len(corpus_unigrams) + nwords_corpus + 1
         for word in query:
             try:

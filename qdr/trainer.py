@@ -3,9 +3,15 @@
 a corpus)
 '''
 
-import gzip
+import sys
 
-from contextlib import closing
+from codecs import EncodedFile
+from gzip import GzipFile
+
+if sys.version_info[0] == 3:
+    PY3 = True
+else:
+    PY3 = False
 
 # the model is written to a flat text file with the following format:
 #
@@ -17,20 +23,29 @@ def load_model(inputfile):
     '''
     Return total docs, counts dict
     '''
-    with closing(gzip.GzipFile(inputfile, 'r')) as f:
+    with GzipFile(inputfile, 'r') as f:
         ndocs = int(f.readline().strip())
         counts = {}
         for line in f:
+            if PY3:
+                line = line.decode('utf-8')
             word, count1, count2 = line.strip().split('\t')
             counts[word] = [int(count1), int(count2)]
     return ndocs, counts
 
 def write_model(ndocs, counts, outputfile):
     '''Write to output file'''
-    with closing(gzip.GzipFile(outputfile, 'w')) as f:
-        f.write("%s\n" % ndocs)
-        for word, count in counts.iteritems():
-            f.write("%s\t%s\t%s\n" % (word, count[0], count[1]))
+    if PY3:
+        with GzipFile(outputfile, 'w') as f:
+            f.write("{0}\n".format(ndocs).encode('utf-8'))
+            for word, count in counts.items():
+                f.write("{0}\t{1}\t{2}\n".format(word, count[0], count[1]).\
+                    encode('utf-8'))
+    else:
+        with GzipFile(outputfile, 'w') as f:
+            f.write("%s\n" % ndocs)
+            for word, count in counts.items():
+                f.write("%s\t%s\t%s\n" % (word, count[0], count[1]))
 
 
 class Trainer(object):
@@ -76,7 +91,7 @@ class Trainer(object):
         Update the current model with the counts from another model
         qd is another Trainer instance 
         '''
-        for word, count in qd._counts.iteritems():
+        for word, count in qd._counts.items():
             try:
                 self._counts[word][0] += count[0]
                 self._counts[word][1] += count[1]
@@ -90,7 +105,7 @@ class Trainer(object):
         or document count less then min_doc_count
         '''
         words_to_remove = []
-        for word, count in self._counts.iteritems():
+        for word, count in self._counts.items():
             if count[0] < min_count or count[1] < min_doc_count:
                 words_to_remove.append(word)
 
